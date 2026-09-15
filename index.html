@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediKiosk AI - Multimodal Patient History & ABDM Portal (SIH 2026)</title>
+  <meta name="description" content="AI-powered multimodal patient clinical history software platform for Indian hospital OPDs integrated with ABDM.">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Top App Header -->
+  <header class="app-header">
+    <div class="brand-container">
+      <div class="brand-logo">🏥</div>
+      <div class="brand-title">
+        <h1>MediKiosk AI</h1>
+        <p>Patient Clinical History & ABDM Ecosystem | SIH 2026</p>
+      </div>
+    </div>
+
+    <div class="header-controls">
+      <!-- Mode Tabs -->
+      <nav class="nav-tabs">
+        <button class="nav-tab-btn active" id="tab-kiosk" onclick="switchView('kiosk')">
+          <span>🗣️</span> <span data-i18n="patientKioskTab">Patient Kiosk</span>
+        </button>
+        <button class="nav-tab-btn" id="tab-scanner" onclick="switchView('scanner')">
+          <span>📄</span> <span data-i18n="docDigitizeTab">Document AI Scanner</span>
+        </button>
+        <button class="nav-tab-btn" id="tab-doctor" onclick="switchView('doctor')">
+          <span>🩺</span> <span data-i18n="doctorPortalTab">Doctor Portal</span>
+        </button>
+      </nav>
+
+      <!-- ABHA Verification Badge -->
+      <div class="abha-badge">
+        <span>🇮🇳</span>
+        <span data-i18n="abhaVerified">ABHA Linked</span>
+      </div>
+
+      <!-- Language Selector -->
+      <select id="lang-select" class="lang-select" onchange="changeLanguage(this.value)">
+        <option value="en-IN">🇮🇳 English</option>
+        <option value="hi-IN">🇮🇳 हिन्दी (Hindi)</option>
+        <option value="ta-IN">🇮🇳 தமிழ் (Tamil)</option>
+        <option value="te-IN">🇮🇳 తెలుగు (Telugu)</option>
+        <option value="mr-IN">🇮🇳 मराठी (Marathi)</option>
+      </select>
+    </div>
+  </header>
+
+  <!-- Emergency Banner (Hidden by default, shows when red-flag occurs) -->
+  <div id="emergency-banner" class="emergency-banner" style="display: none;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span style="font-size: 20px;">🚨</span>
+      <span id="emergency-banner-text">PRIORITY EMERGENCY TRIAGE ALERT DETECTED - PATIENT ESCALATED</span>
+    </div>
+    <button class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px;" onclick="switchView('doctor')">View Emergency Queue</button>
+  </div>
+
+  <!-- SIH 2026 Demo Preset Bar -->
+  <div class="demo-toolbar">
+    <strong style="color: var(--primary);" data-i18n="demoCasesTitle">SIH 2026 Demo Presets:</strong>
+    <button class="demo-btn" onclick="loadDemoCase('case_cardiac_emergency')">
+      <span style="color: #ef4444;">🚨</span> Cardiac Emergency (Red-Flag)
+    </button>
+    <button class="demo-btn" onclick="loadDemoCase('case_diabetes_ocr')">
+      <span style="color: #3b82f6;">📄</span> Diabetes Follow-up + Lab OCR
+    </button>
+    <button class="demo-btn" onclick="loadDemoCase('case_ayush_opd')">
+      <span style="color: #10b981;">🌿</span> AYUSH OPD Dashavidha Pariksha
+    </button>
+    <button class="demo-btn" onclick="loadDemoCase('case_ai_allotment')">
+      <span style="color: #8b5cf6;">🤖</span> Other Medical Issue (AI Allotment)
+    </button>
+  </div>
+
+  <!-- Main Content Layout -->
+  <main class="main-container">
+
+    <!-- VIEW 1: PATIENT MULTIMODAL KIOSK INTERVIEW -->
+    <section id="view-kiosk" class="view-section active">
+      <div class="glass-panel">
+        
+        <!-- Wizard Header -->
+        <div class="wizard-header">
+          <div>
+            <h2 style="font-size: 18px; font-weight: 700;" id="kiosk-step-title">Step 1: Patient Verification & Chief Complaint</h2>
+            <p style="font-size: 13px; color: var(--text-muted);">Speak naturally in your language or tap options on screen</p>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <!-- AYUSH Mode Toggle -->
+            <div class="ayush-toggle-box" onclick="toggleAyushMode()">
+              <input type="checkbox" id="ayush-checkbox" style="cursor: pointer;">
+              <label for="ayush-checkbox" data-i18n="ayushModeLabel">AYUSH Mode (Ayurveda)</label>
+            </div>
+
+            <!-- Step Dots -->
+            <div class="step-indicator">
+              <div class="step-dot active" id="dot-1"></div>
+              <div class="step-dot" id="dot-2"></div>
+              <div class="step-dot" id="dot-3"></div>
+              <div class="step-dot" id="dot-4"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Question Body Area -->
+        <div id="kiosk-body">
+          <!-- Dynamically Rendered by app.js -->
+        </div>
+
+        <!-- Wizard Navigation Footer -->
+        <div class="wizard-footer">
+          <button class="btn btn-secondary" id="btn-prev" onclick="prevStep()" disabled>
+            ← <span data-i18n="prevQuestion">Previous Question</span>
+          </button>
+
+          <button class="btn btn-primary" id="btn-next" onclick="nextStep()">
+            <span data-i18n="nextQuestion">Next Question</span> →
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- VIEW 2: MEDICAL DOCUMENT DIGITIZATION & OCR AI -->
+    <section id="view-scanner" class="view-section">
+      <div class="glass-panel">
+        <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">Module B: Medical Document Digitization & AI Intelligence</h2>
+        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">Upload or snap prior prescriptions, lab reports, or discharge summaries to automatically extract lab values and flag drug interactions.</p>
+
+        <div class="doc-grid">
+          <!-- Document Upload & Scanner Simulation -->
+          <div class="doc-upload-box">
+            <div class="scanner-beam" id="scanner-beam"></div>
+            <div style="font-size: 40px;">📑</div>
+            <h3 style="font-size: 16px; font-weight: 600;">Scan Document / Upload Report</h3>
+            <p style="font-size: 12px; color: var(--text-muted);">Supports JPG, PNG, PDF formats (or select a sample below)</p>
+
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 10px;">
+              <button class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;" onclick="triggerScan('doc_cbc_lab')">
+                📷 Sample 1: Lab Report (CBC & HbA1c)
+              </button>
+              <button class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;" onclick="triggerScan('doc_prescription')">
+                📷 Sample 2: Prior Cardiology Prescription
+              </button>
+            </div>
+          </div>
+
+          <!-- OCR Extracted Results Card -->
+          <div class="extracted-card" id="ocr-results">
+            <h3 style="font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 12px;">AI Document Intelligence Extraction</h3>
+            <p style="font-size: 13px; color: var(--text-muted);" id="ocr-placeholder">Select a sample document above to initiate scanning and parameter extraction.</p>
+            
+            <div id="ocr-content" style="display: none;">
+              <!-- Rendered by app.js -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: DOCTOR OPD PORTAL & EHR DASHBOARD -->
+    <section id="view-doctor" class="view-section">
+      <div class="doctor-dashboard">
+        
+        <!-- Queue Sidebar -->
+        <div class="patient-queue">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="font-size: 16px; font-weight: 700;">OPD Patient Queue</h3>
+            <span style="font-size: 12px; background: rgba(6, 182, 212, 0.2); color: var(--primary); padding: 2px 8px; border-radius: 10px;" id="queue-count">3 Patients</span>
+          </div>
+
+          <div id="queue-list-container">
+            <!-- Queue items rendered by app.js -->
+          </div>
+        </div>
+
+        <!-- SOAP Note Clinical Summary Card -->
+        <div class="soap-note-card" id="soap-card">
+          <!-- Rendered by app.js -->
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Emergency Red-Flag Modal Alert -->
+  <div id="emergency-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div style="font-size: 50px; margin-bottom: 12px;">🚨</div>
+      <h2 style="font-size: 22px; color: var(--danger-red); font-weight: 800; margin-bottom: 8px;" data-i18n="redFlagTitle">CRITICAL SYMPTOM ALERT DETECTED</h2>
+      <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px;" id="red-flag-modal-msg">Acute chest pain with shortness of breath detected. Priority escalated to Level 1 Emergency.</p>
+      
+      <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger-red); padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 13px;">
+        <strong>Immediate Triage Action:</strong> Alert sent to OPD Nurse Station & Emergency Resuscitation Team. Token #EM-01 generated.
+      </div>
+
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        <button class="btn btn-danger" onclick="closeEmergencyModal()">Acknowledge & Transfer to Triage</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Modules -->
+  <script src="data.js?v=2.0"></script>
+  <script src="app.js?v=2.0"></script>
+</body>
+</html>
